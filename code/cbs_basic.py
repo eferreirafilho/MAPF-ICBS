@@ -1,17 +1,8 @@
 import time as timer
 import heapq
 import random
-# from single_agent_planner import compute_heuristics, a_star, get_location, get_sum_of_cost
 
-
-from a_star import a_star, get_sum_of_cost, compute_heuristics, get_location
-# from pea_star import pea_star
-
-from a_star_class import A_Star
-
-from pea_star_class import PEA_Star
-
-PEA_STAR = PEA_Star
+from a_star_class import A_Star, get_location, get_sum_of_cost, compute_heuristics
 
 def detect_collision(path1, path2):
     ##############################
@@ -26,14 +17,15 @@ def detect_collision(path1, path2):
         loc_c2 = get_location(path2,t)
         loc1 = get_location(path1,t+1)
         loc2 = get_location(path2,t+1)
+        # vertex collision
         if loc1 == loc2:
             return [loc1],t
+        # edge collision
         if[loc_c1,loc1] ==[loc2,loc_c2]:
             return [loc2,loc_c2],t
         
        
     return None
-    # pass
 
 
 def detect_collisions(paths):
@@ -52,8 +44,6 @@ def detect_collisions(paths):
                                 'loc':position,
                                 'timestep':t+1})
     return collisions
-
-    # pass
 
 
 def standard_splitting(collision):
@@ -89,9 +79,6 @@ def standard_splitting(collision):
                             'positive':False
                             })
     return constraints
-
-    # pass
-
 
 def disjoint_splitting(collision):
     ##############################
@@ -142,9 +129,6 @@ def disjoint_splitting(collision):
                                 })
     return constraints
 
-
-    # pass
-
 def paths_violate_constraint(constraint, paths):
     assert constraint['positive'] is True
     rst = []
@@ -172,7 +156,6 @@ class CBSSolver(object):
         goals       - [(x1, y1), (x2, y2), ...] list of goal locations
         """
 
-        self.ll_solver = a_star
         self.my_map = my_map
         self.starts = starts
         self.goals = goals
@@ -201,11 +184,10 @@ class CBSSolver(object):
         return node
 
 
-    def find_solution(self, disjoint, a_star_version):
+    def find_solution(self, disjoint):
         """ Finds paths for all agents from their start locations to their goal locations
 
         disjoint         - use disjoint splitting or not
-        a_star_version   - version of A*; "a_star" or "pea_star"
         """
 
         self.start_time = timer.time()
@@ -217,17 +199,7 @@ class CBSSolver(object):
 
         print("USING: ", splitter)
 
-        AStar = PEA_STAR
-
-        if a_star_version == "a_star":
-            # AStar = a_star # not a class yet
-            AStar = A_Star
-        # if ll_solver == "a_star":
-        #     # low-level solver
-        #     self.ll_solver = a_star
-        # else:
-        #     self.ll_solver = pea_star
-        
+        AStar = A_Star
 
         # Generate the root node
         # constraints   - list of constraints
@@ -243,7 +215,6 @@ class CBSSolver(object):
             astar = AStar(self.my_map, self.starts, self.goals, self.heuristics,i, root['constraints'])
             path = astar.find_paths()
 
-            # path = ma_star(self.my_map, self.starts, self.goals, self.heuristics,[i], root['constraints'])
             if path is None:
                 raise BaseException('No solutions')
             root['paths'].append(path[0])
@@ -313,9 +284,6 @@ class CBSSolver(object):
                     q['cost'] = get_sum_of_cost(q['paths'])
                     self.push_node(q)     
         return None
-        self.print_results(root)
-        return root['paths']
-
 
     def print_results(self, node):
         print("\n Found a solution! \n")
